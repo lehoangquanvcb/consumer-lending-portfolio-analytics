@@ -8,7 +8,7 @@ from modules.data_engine import *
 from modules.strategy_engine import *
 
 st.set_page_config(
-    page_title="Consumer Lending Portfolio Analytics Workbench",
+    page_title="Consumer Lending Portfolio Analytics Workbench - Author: Le Hoang Quan",
     page_icon="🏦",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -205,7 +205,7 @@ End-to-end visibility across consumer lending portfolio performance, risk qualit
 # ---------- Header ----------
 h1,h2 = st.columns([5.2,1.8], vertical_alignment="center")
 with h1:
-    st.title("Consumer Lending Portfolio Analytics Workbench")
+    st.title("Consumer Lending Portfolio Analytics Workbench - Author: Le Hoang Quan")
     st.markdown('<div class="subtle">End-to-End Portfolio Monitoring, Risk Analytics & Management Reporting</div>', unsafe_allow_html=True)
 with h2:
     max_date = snaps["snapshot_date"].max().date()
@@ -405,15 +405,50 @@ if page=="Executive Overview":
 # ---------- Detail pages ----------
 elif page=="Portfolio Overview":
     st.subheader("Portfolio Overview")
-    c1,c2=st.columns(2)
-    for col,dim in zip([c1,c2,c3,c4],["product","channel","region","risk_band"]):
-        g=latest.groupby(dim,as_index=False)["outstanding_balance_vnd"].sum()
-        fig=px.pie(g,names=dim,values="outstanding_balance_vnd",hole=.52,title=f"Balance by {dim.replace('_',' ').title()}")
-        chart_style(fig,330,True)
-        col.plotly_chart(fig,use_container_width=True,config={"displayModeBar":False})
-    view=latest.groupby(["product","risk_band"],as_index=False).agg(
-        Balance=("outstanding_balance_vnd","sum"),Accounts=("loan_id","nunique"),Average_DPD=("dpd","mean"))
-    st.dataframe(view,use_container_width=True,hide_index=True)
+
+    # Responsive 2x2 layout to avoid overlap on laptop screens.
+    row1_col1, row1_col2 = st.columns(2)
+    row2_col1, row2_col2 = st.columns(2)
+
+    chart_specs = [
+        (row1_col1, "product", "Balance by Product"),
+        (row1_col2, "channel", "Balance by Channel"),
+        (row2_col1, "region", "Balance by Region"),
+        (row2_col2, "risk_band", "Balance by Risk Band"),
+    ]
+
+    for container, dim, title in chart_specs:
+        g = latest.groupby(dim, as_index=False)["outstanding_balance_vnd"].sum()
+        fig = px.pie(
+            g,
+            names=dim,
+            values="outstanding_balance_vnd",
+            hole=.52,
+            title=title
+        )
+        chart_style(fig, 340, True)
+        fig.update_layout(
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="left",
+                x=0
+            ),
+            margin=dict(l=10, r=10, t=70, b=20)
+        )
+        container.plotly_chart(
+            fig,
+            use_container_width=True,
+            config={"displayModeBar": False}
+        )
+
+    view = latest.groupby(["product", "risk_band"], as_index=False).agg(
+        Balance=("outstanding_balance_vnd", "sum"),
+        Accounts=("loan_id", "nunique"),
+        Average_DPD=("dpd", "mean")
+    )
+    st.dataframe(view, use_container_width=True, hide_index=True)
 
 elif page=="Vintage Analysis":
     st.subheader("Vintage Analysis")

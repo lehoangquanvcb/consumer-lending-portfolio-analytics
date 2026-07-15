@@ -109,3 +109,9 @@ Core workflow:
 Portfolio Performance → Risk Diagnosis → Forecast → Strategy Simulation → Management Recommendation → Decision → Action Tracking → Reporting
 
 All market/peer benchmark values included in the demonstration are synthetic.
+
+
+## V4 Fixed 2
+- Updated visible application title to include Author: Le Hoang Quan.
+- Rebuilt Portfolio Overview as a stable responsive 2x2 chart layout.
+- Fixed NameError caused by undefined c3/c4 columns.
