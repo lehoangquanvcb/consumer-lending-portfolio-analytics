@@ -14,6 +14,16 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+st.markdown("""
+<style>
+@media (max-width: 1400px) {
+    .block-container { padding-left: 1rem !important; padding-right: 1rem !important; }
+}
+[data-testid="stPlotlyChart"] { overflow: hidden; }
+[data-testid="stPlotlyChart"] > div { width: 100% !important; }
+</style>
+""", unsafe_allow_html=True)
+
 # ---------- Theme and layout ----------
 st.markdown("""
 <style>
@@ -395,7 +405,7 @@ if page=="Executive Overview":
 # ---------- Detail pages ----------
 elif page=="Portfolio Overview":
     st.subheader("Portfolio Overview")
-    c1,c2,c3,c4=st.columns(4)
+    c1,c2=st.columns(2)
     for col,dim in zip([c1,c2,c3,c4],["product","channel","region","risk_band"]):
         g=latest.groupby(dim,as_index=False)["outstanding_balance_vnd"].sum()
         fig=px.pie(g,names=dim,values="outstanding_balance_vnd",hole=.52,title=f"Balance by {dim.replace('_',' ').title()}")
@@ -413,7 +423,7 @@ elif page=="Vintage Analysis":
     fig.update_yaxes(tickformat=".1%"); chart_style(fig,480,True)
     st.plotly_chart(fig,use_container_width=True,config={"displayModeBar":False})
     pivot=v.pivot_table(index="vintage_month",columns="mob",values="rate",aggfunc="max")
-    st.dataframe(pivot.style.format("{:.2%}").background_gradient(axis=None),use_container_width=True)
+    st.dataframe(pivot.style.format("{:.2%}"),use_container_width=True)
 
 elif page=="Roll Rate Analysis":
     st.subheader("Roll Rate Analysis")
@@ -431,7 +441,7 @@ elif page=="DPD Migration":
                   labels={"x":"To Bucket","y":"From Bucket","color":"Transition Rate"})
     chart_style(fig,500,False)
     st.plotly_chart(fig,use_container_width=True,config={"displayModeBar":False})
-    st.dataframe(m.style.format("{:.2%}").background_gradient(axis=None),use_container_width=True)
+    st.dataframe(m.style.format("{:.2%}"),use_container_width=True)
 
 elif page=="Delinquency Analysis":
     st.subheader("Delinquency Analysis")
@@ -541,6 +551,7 @@ elif page=="Credit Policy Simulator":
     c1,c2,c3,c4=st.columns(4)
     score=c1.slider("Minimum Credit Score",450,800,620,10)
     amount=c2.slider("Maximum Loan Amount (VND mn)",20,300,220,10)*1_000_000
+    c3,c4=st.columns(2)
     tenor=c3.slider("Maximum Tenor (months)",6,48,36,6)
     exclude=c4.multiselect("Exclude Risk Bands",["A","B","C","D","E"],default=["E"])
     r=policy_simulator(loans,score,amount,tenor,exclude)
