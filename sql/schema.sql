@@ -1,0 +1,2 @@
+CREATE TABLE loan_master (loan_id VARCHAR(50) PRIMARY KEY, customer_id VARCHAR(50), origination_date DATE, product VARCHAR(100), risk_score INTEGER, original_amount_vnd DECIMAL(20,2));
+CREATE TABLE monthly_snapshots (snapshot_date DATE, loan_id VARCHAR(50), outstanding_balance_vnd DECIMAL(20,2), dpd INTEGER, dpd_bucket VARCHAR(20));

@@ -1,0 +1,2 @@
+WITH x AS (SELECT loan_id,snapshot_date,dpd_bucket,LEAD(dpd_bucket) OVER(PARTITION BY loan_id ORDER BY snapshot_date) next_bucket,outstanding_balance_vnd FROM monthly_snapshots)
+SELECT dpd_bucket from_bucket,next_bucket to_bucket,SUM(outstanding_balance_vnd) exposure FROM x WHERE next_bucket IS NOT NULL GROUP BY 1,2;

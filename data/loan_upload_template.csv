@@ -1,0 +1,1 @@
+loan_id,customer_id,origination_date,product,channel,region,loan_purpose,risk_band,risk_score,original_amount_vnd,tenor_months,annual_interest_rate

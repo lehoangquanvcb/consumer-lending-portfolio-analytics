@@ -1,0 +1,8 @@
+Parameter,Value,Unit,Description
+Funding Cost,0.085,% p.a.,Average annual funding cost
+Target 30+ DPD,0.035,% balance,Risk appetite threshold
+Target 90+ DPD,0.018,% balance,NPL proxy threshold
+Collection Target,0.33,% due,Rolling collection target
+Cost of Risk Target,0.03,% balance,Annualized risk appetite
+Stress PD Multiplier,1.35,x,Stress scenario deterioration
+Data Source,Synthetic,,Demonstration data only
