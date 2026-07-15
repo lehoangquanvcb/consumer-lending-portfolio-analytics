@@ -109,8 +109,8 @@ hr {border-color:#294158!important;}
 PLOT_LAYOUT = dict(
     paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
     font=dict(color="#dfe9f5", size=11),
-    margin=dict(l=22,r=18,t=42,b=25),
-    legend=dict(orientation="h", yanchor="bottom", y=1.01, xanchor="left", x=0),
+    margin=dict(l=22,r=18,t=58,b=28),
+    legend=dict(orientation="h", yanchor="top", y=-0.12, xanchor="left", x=0),
     hoverlabel=dict(bgcolor="#10243a",font_color="white"),
 )
 GRID = "#294158"
@@ -314,42 +314,93 @@ if page=="Executive Overview":
         st.dataframe(key,hide_index=True,use_container_width=True,height=250)
         st.markdown("</div>",unsafe_allow_html=True)
 
-    r2c1,r2c2,r2c3=st.columns([1.12,1.28,1.15])
+    # Executive analytics row: use a wider two-column first row and full-width
+    # collection chart below. This prevents title/legend collisions on laptop screens.
+    r2c1,r2c2=st.columns([1.05,1.0])
     with r2c1:
         st.markdown('<div class="panel">',unsafe_allow_html=True)
         v=vintage_analysis(df)
         recent=v["vintage_month"].drop_duplicates().sort_values().tail(6)
-        vv=v[v["vintage_month"].isin(recent)]
-        fig=px.line(vv,x="mob",y="rate",color="vintage_month",markers=True)
+        vv=v[v["vintage_month"].isin(recent)].copy()
+        vv["vintage_label"]=pd.to_datetime(vv["vintage_month"]).dt.strftime("%Y-%m")
+        fig=px.line(vv,x="mob",y="rate",color="vintage_label",markers=True)
         fig.update_yaxes(tickformat=".0%")
-        fig.update_layout(title="Vintage Analysis – 30+ DPD (% of Original Balance)")
-        chart_style(fig,300,True)
+        fig.update_layout(
+            title=dict(text="Vintage Analysis – 30+ DPD (% of Original Balance)",x=0.01,xanchor="left"),
+            legend=dict(
+                title_text="Vintage",
+                orientation="h",
+                yanchor="top",
+                y=-0.16,
+                xanchor="left",
+                x=0,
+                font=dict(size=10)
+            ),
+            margin=dict(l=30,r=20,t=70,b=90)
+        )
+        chart_style(fig,390,True)
+        # Re-apply chart-specific spacing after the shared style helper.
+        fig.update_layout(
+            title=dict(text="Vintage Analysis – 30+ DPD (% of Original Balance)",x=0.01,xanchor="left"),
+            legend=dict(title_text="Vintage",orientation="h",yanchor="top",y=-0.16,xanchor="left",x=0,font=dict(size=10)),
+            margin=dict(l=30,r=20,t=70,b=90)
+        )
         panel_chart("",fig)
         st.markdown("</div>",unsafe_allow_html=True)
+
     with r2c2:
         st.markdown('<div class="panel">',unsafe_allow_html=True)
         m=migration_matrix(df)
-        fig=px.imshow(m,text_auto=".1%",aspect="auto",
-                      color_continuous_scale=[[0,"#183a53"],[.55,"#477c4e"],[1,"#9b463b"]],
-                      labels={"x":"To (Next Month DPD)","y":"From (Current DPD)","color":"Rate"})
-        fig.update_layout(title="DPD Migration Matrix (% of Balance)")
-        chart_style(fig,300,False)
+        fig=px.imshow(
+            m,text_auto=".1%",aspect="auto",
+            color_continuous_scale=[[0,"#183a53"],[.55,"#477c4e"],[1,"#9b463b"]],
+            labels={"x":"To (Next Month DPD)","y":"From (Current DPD)","color":"Rate"}
+        )
+        chart_style(fig,390,False)
+        fig.update_layout(
+            title=dict(text="DPD Migration Matrix (% of Balance)",x=0.01,xanchor="left"),
+            margin=dict(l=60,r=25,t=70,b=55)
+        )
         panel_chart("",fig)
         st.markdown("</div>",unsafe_allow_html=True)
-    with r2c3:
-        st.markdown('<div class="panel">',unsafe_allow_html=True)
-        ct=collection_trend(df)
-        fig=go.Figure()
-        fig.add_bar(x=ct["snapshot_date"],y=ct["actual_payment_vnd"]/1e9,name="Collected Amount",marker_color="#3476d7",
-                    text=(ct["actual_payment_vnd"]/1e9).round(0),textposition="inside")
-        fig.add_scatter(x=ct["snapshot_date"],y=ct["collection_rate"],name="Collection Rate",yaxis="y2",
-                        line=dict(color=GREEN,width=3),mode="lines+markers+text",
-                        text=ct["collection_rate"].map(lambda x:f"{x:.1%}"),textposition="top center")
-        fig.update_layout(title="Collection Performance (3M Rolling)",
-                          yaxis2=dict(overlaying="y",side="right",tickformat=".0%",gridcolor="rgba(0,0,0,0)"))
-        chart_style(fig,300,True)
-        panel_chart("",fig)
-        st.markdown("</div>",unsafe_allow_html=True)
+
+    st.markdown('<div class="panel">',unsafe_allow_html=True)
+    ct=collection_trend(df)
+    fig=go.Figure()
+    fig.add_bar(
+        x=ct["snapshot_date"],y=ct["actual_payment_vnd"]/1e9,
+        name="Collected Amount",marker_color="#3476d7",
+        text=(ct["actual_payment_vnd"]/1e9).round(0),textposition="inside"
+    )
+    fig.add_scatter(
+        x=ct["snapshot_date"],y=ct["collection_rate"],
+        name="Collection Rate",yaxis="y2",
+        line=dict(color=GREEN,width=3),mode="lines+markers+text",
+        text=ct["collection_rate"].map(lambda x:f"{x:.1%}"),
+        textposition="top center"
+    )
+    chart_style(fig,360,True)
+    fig.update_layout(
+        title=dict(text="Collection Performance (3M Rolling)",x=0.01,xanchor="left"),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1,
+            font=dict(size=10)
+        ),
+        margin=dict(l=45,r=65,t=85,b=40),
+        yaxis=dict(title="Collected Amount (VND Bn)"),
+        yaxis2=dict(
+            title="Collection Rate",
+            overlaying="y",side="right",
+            tickformat=".0%",
+            gridcolor="rgba(0,0,0,0)"
+        )
+    )
+    panel_chart("",fig)
+    st.markdown("</div>",unsafe_allow_html=True)
 
     r3c1,r3c2,r3c3=st.columns([1.12,1.28,1.15])
     with r3c1:
